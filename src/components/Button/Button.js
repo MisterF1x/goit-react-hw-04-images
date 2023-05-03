@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 
 export const LoadButton = ({ onClick }) => {
   return (
-    <LoadBtn onClick={onClick} type="button">
+    <LoadBtn onClick={onClick} type="button" aria-label="load more">
       Load more
     </LoadBtn>
   );

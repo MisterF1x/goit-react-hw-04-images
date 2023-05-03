@@ -1,7 +1,7 @@
 import { Global } from '@emotion/react';
 import { Layout } from '../Layout/Layout';
 import { Style } from '../GlobalStyle';
-import { Component } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Searchbar } from 'components/Searchbar/Searchbar';
 import { fetchImages } from 'services/api';
 import { Loader } from 'components/Loader/Loader';
@@ -11,94 +11,65 @@ import toast, { Toaster } from 'react-hot-toast';
 import { Modal } from 'components/Modal/Modal';
 import { ERROR_MSG, toastErrStyle } from 'components/constant';
 
-export class App extends Component {
-  state = {
-    query: '',
-    images: [],
-    page: 1,
-    total: null,
-    isLoading: false,
-    perPage: 12,
-    showModal: false,
+export const App = () => {
+  const [query, setQuery] = useState('');
+  const [images, setImages] = useState([]);
+  const [page, setPage] = useState(1);
+  const [total, setTotal] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [showModal, setShowModal] = useState(false);
+  const perPage = useRef(12);
+  const [activeImg, setActiveImg] = useState(null);
+  const [activeAlt, setActiveAlt] = useState(null);
+  const isLoadBtn = !!(total > images.length && !isLoading);
+  const handleSubmit = query => {
+    setQuery(query);
+    setImages([]);
+    setPage(1);
+    setTotal(null);
+    setIsLoading(false);
   };
-
-  async componentDidUpdate(_, prevState) {
-    const { query, page, perPage } = this.state;
-    if (
-      this.state.query !== prevState.query ||
-      this.state.page !== prevState.page
-    ) {
-      this.getImages(query, page, perPage);
-    }
-  }
-
-  getImages = async (query, page, perPage) => {
-    try {
-      this.setState({ isLoading: true });
-      const { hits, totalHits } = await fetchImages(query, page, perPage);
-      if (!hits.length) {
-        toast.error(ERROR_MSG['msg'], toastErrStyle);
+  const openModal = (url, alt) => {
+    setShowModal(!showModal);
+    setActiveImg(url);
+    setActiveAlt(alt);
+  };
+  useEffect(() => {
+    if (!query) return;
+    const getImages = async (query, page, perPage) => {
+      try {
+        setIsLoading(true);
+        const { hits, totalHits } = await fetchImages(query, page, perPage);
+        if (!hits.length) toast.error(ERROR_MSG['msg'], toastErrStyle);
+        setQuery(query);
+        setImages(prevImg => [...prevImg, ...hits]);
+        setIsLoading(false);
+        setTotal(totalHits);
+      } catch (error) {
+        toast.error(error.message);
+        console.error(error);
       }
-      this.setState(({ images }) => ({
-        query,
-        images: [...images, ...hits],
-        isLoading: false,
-        total: totalHits,
-      }));
-    } catch (error) {
-      toast.error(error.message);
-      console.error(error);
-    }
-  };
-  handleLoadMore = () => {
-    this.setState(({ page }) => ({
-      page: page + 1,
-    }));
-  };
-  handleSubmit = query => {
-    this.setState({
-      query,
-      images: [],
-      page: 1,
-      total: null,
-      isLoading: false,
-    });
-  };
-  openModal = (url, alt) => {
-    this.setState(({ showModal }) => ({
-      showModal: !showModal,
-      url,
-      alt,
-    }));
-  };
-  closeModal = () => {
-    this.setState(({ showModal }) => ({
-      showModal: !showModal,
-    }));
-  };
+    };
+    getImages(query, page, perPage);
+  }, [query, page, perPage]);
 
-  render() {
-    const { query, images, isLoading, total, showModal, url, alt } = this.state;
-    const isLoadBtn = !!(total > images.length && !isLoading);
-    return (
-      <Layout>
-        <Searchbar
-          initial={query}
-          onSubmit={this.handleSubmit}
-          isSubmitting={isLoading}
-        ></Searchbar>
-        <ImageGallery onClick={this.openModal} items={images} />
-        {isLoading && <Loader />}
-        {isLoadBtn && <LoadButton onClick={this.handleLoadMore} />}
-
-        {showModal && (
-          <Modal onClose={this.closeModal}>
-            <img src={url} alt={alt} />
-          </Modal>
-        )}
-        <Toaster position="top-right" />
-        <Global styles={Style} />
-      </Layout>
-    );
-  }
-}
+  return (
+    <Layout>
+      <Searchbar
+        initial={query}
+        onSubmit={handleSubmit}
+        isSubmitting={isLoading}
+      ></Searchbar>
+      <ImageGallery onClick={openModal} items={images} />
+      {isLoading && <Loader />}
+      {isLoadBtn && <LoadButton onClick={() => setPage(prev => prev + 1)} />}
+      {showModal && (
+        <Modal onClose={() => setShowModal(!showModal)}>
+          <img src={activeImg} alt={activeAlt} />
+        </Modal>
+      )}
+      <Toaster position="top-right" />
+      <Global styles={Style} />
+    </Layout>
+  );
+};
