@@ -50,8 +50,8 @@ export const App = () => {
         console.error(error);
       }
     };
-    getImages(query, page, perPage);
-  }, [query, page, perPage]);
+    getImages(query, page, perPage.current);
+  }, [query, page]);
 
   return (
     <Layout>
