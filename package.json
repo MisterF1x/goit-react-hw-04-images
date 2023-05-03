@@ -1,8 +1,8 @@
 {
   "name": "react-image-finder",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "private": true,
-  "homepage": "https://misterf1x.github.io/goit-react-hw-03-image-finder/",
+  "homepage": "https://misterf1x.github.io/goit-react-hw-04-images/",
   "dependencies": {
     "@emotion/react": "^11.10.6",
     "@emotion/styled": "^11.10.6",
