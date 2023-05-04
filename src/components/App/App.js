@@ -35,6 +35,7 @@ export const App = () => {
     setActiveAlt(alt);
   };
   useEffect(() => {
+    console.log(query);
     if (!query) return;
     const getImages = async (query, page, perPage) => {
       try {

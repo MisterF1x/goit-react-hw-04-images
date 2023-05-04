@@ -13,7 +13,7 @@ import { ERROR_MSG, toastErrStyle } from 'components/constant';
 export const Searchbar = ({ onSubmit, isSubmitting, initial }) => {
   const handleFormSubmit = ({ query }, { resetForm }) => {
     const trimedQuery = query.trim();
-    if (!trimedQuery) toast.error(ERROR_MSG['empty'], toastErrStyle);
+    if (!trimedQuery) return toast.error(ERROR_MSG['empty'], toastErrStyle);
     resetForm();
     onSubmit(query);
   };
